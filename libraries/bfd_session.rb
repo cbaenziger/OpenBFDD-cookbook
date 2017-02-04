@@ -34,10 +34,6 @@ class Chef
       stream_id = "local #{new_resource.local_ip} remote #{new_resource.remote_ip}"
 
       converge_by("BFD connection #{new_resource.name} being created") do
-        bash "Touch a test file" do
-          code "touch /tmp/t"
-          action :run
-        end
         bash "Connect #{stream_id} using bfdd-control" do
           code "#{bfd_ctrl} connect #{stream_id}"
           action :run
@@ -69,10 +65,7 @@ class Chef
       state_change("admin")
     end
 
-    def self.verify_stream_status(stream_id, desired_state, bfd_ctrl)
-      true
-    end
-    def XXXself_verify_stream_status(stream_id, desired_state, bfd_ctrl) # XXX disabled due to routers not listening
+    def self_verify_stream_status(stream_id, desired_state, bfd_ctrl)
       verify = Mixlib::ShellOut.new("#{bfd_ctrl} status #{stream_id} level 0")
       verify.run_command
       # Expected output
