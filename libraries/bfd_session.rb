@@ -65,7 +65,7 @@ class Chef
       state_change("admin")
     end
 
-    def self_verify_stream_status(stream_id, desired_state, bfd_ctrl)
+    def verify_stream_status(stream_id, desired_state, bfd_ctrl)
       verify = Mixlib::ShellOut.new("#{bfd_ctrl} status #{stream_id} level 0")
       verify.run_command
       # Expected output
@@ -75,9 +75,11 @@ class Chef
       # state=Up
       kv_pairs = verify.stdout.split("\n")
       kvs = kv_pairs.map do |kv|
+        puts "XXX: #{kv}"
+        next if kv.nil?
         (key, value) = kv.strip.split('=',2)
         key = key.strip.downcase
-        value = value.strip.downcase
+        value = value.nil? ? nil : value.strip.downcase
         [key, value]
       end
       kv = kvs.select { |key, value| key == "state" }
@@ -90,6 +92,7 @@ class Chef
     end
 
     def state_change(state)
+      # XXX For test need to pass which beacon we are controlling
       bfd_ctrl = "#{node[:bfd][:install_dir]}/bin/bfdd-control"
       stream_id = "local #{new_resource.local_ip} remote #{new_resource.remote_ip}"
       converge_by("BFD connection #{new_resource.name} being brought #{state}") do
@@ -100,7 +103,7 @@ class Chef
           end
           ruby_block "verify #{stream_id}" do
             block do
-              Chef::Provider::BfdSession.verify_stream_status(stream_id, state, bfd_ctrl)
+              self.verify_stream_status(stream_id, state, bfd_ctrl)
             end
           end
         end
