@@ -26,6 +26,7 @@ suites:
     run_list:
       - 'recipe[bfd::install]'
       - 'recipe[bfd::default]'
+      - 'recipe[bfd-test::default]'
   - name: start-beacon
     attributes: {
       "bfd": {
